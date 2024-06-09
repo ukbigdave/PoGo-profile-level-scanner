@@ -351,7 +351,7 @@ client.once("ready", async () => {
 	// console.log(`[${dateToTime(new Date())}]: New member ${member.user.username}${member} joined the server.`);
   if (!ops.welcomeMsg) return;
   member.send(messagetxtReplace(messagetxt.newMember, member)).catch(() => {
-		console.error(`[${dateToTime(new Date())}]: Error: Could not send welcomeMsg DM to ${member.user.username}${member}`);
+		console.log(`[${dateToTime(new Date())}]: Could not send welcomeMsg DM to ${member.user.username}${member}`);
 	});
 })
 .on("guildMemberUpdate", async (oldMember, newMember) => {
@@ -411,7 +411,7 @@ client.once("ready", async () => {
 	const profile = (ops.profileChannel) ? client.channels.cache.get(ops.profileChannel) : undefined;
 	if (message.channel == profile) return; // Profile channel? Cancel
 	if (message.author.bot && message.author.id != "155149108183695360" && message.author.id != "470722245824610306") return; // Bot? Cancel
-	if (message.guild.id === '873942903364399124' && message.mentions.has(client.user) && message.channel.type != "DM") {message.reply('If you need help please DM me, or tag `@staff`')}; // ADDED FOR PREMIER
+//	if (message.guild.id === '873942903364399124' && message.mentions.has(client.user) && message.channel.type != "DM") {message.reply('If you need help please DM me, or tag `@staff`')}; // ADDED FOR PREMIER
 	if (message.content == `${client.user.toString().slice(0, 2) + "!" + client.user.toString().slice(2, client.user.toString().length)} wassup` || message.content == `${client.user} wassup`) return message.reply("nm, you?");
 	if (message.content == `${client.user.toString().slice(0, 2) + "!" + client.user.toString().slice(2, client.user.toString().length)} prefix` || message.content == `${client.user} prefix`) return message.reply(`\`${ops.prefix}\`${(ops.prefix2) ? ` or \`${ops.prefix2}\`` : ""}`);
 	const postedTime = new Date();
@@ -462,6 +462,28 @@ client.once("ready", async () => {
 	// 			});
 				return;
 			}
+
+			//fix for issue start
+const image = message.attachments.first();
+const fileType = image.url.split(".").pop().toLowerCase();
+const acceptedFileTypes = ["png", "jpg", "jpeg", "jfif", "tiff", "bmp"];
+const logs = (ops.logsChannel) ? client.channels.cache.get(ops.logsChannel) : undefined;
+
+if (!acceptedFileTypes.includes(fileType) && (!image.contentType || image.contentType.split("/")[0] !== "image")) {
+    if (ops.dmMail && dm) return mail.mailDM(message, "wrong");
+    errorMessage(postedTime, dm, `${message.author.username}${message.author} sent an image, which was refused as ${fileType} is an invalid file type: `);
+    message.reply(`I cannot scan this filetype: \`.${fileType}\`.\nIf you think this is in error, please tell a moderator.`).catch(() => {
+        errorMessage(postedTime, dm, `Error: I can not reply to ${message.url}${message.channel}.\nContent of mesage: "${message.content}. Sending a backup message...`);
+        message.channel.send(`I cannot scan this filetype: \`.${fileType}\`.\nIf you think this is in error, please tell a moderator.`);
+    });
+    logs.send({ content: `${(dm) ? "Sent in a DM\n" : ""}User: ${message.author}\nFile is not an image. Not scanned.\n`, files: [image] });
+    saveStats("wrong");
+    return;
+}
+			//fix for issue end. orignal code
+
+
+			/*
 			const image = message.attachments.first();
 			const fileType = image.url.split(".").pop().toLowerCase();
 			const acceptedFileTypes = ["png", "jpg", "jpeg", "jfif", "tiff", "bmp"];
@@ -477,6 +499,13 @@ client.once("ready", async () => {
 				saveStats("wrong");
 				return;
 			}
+
+   */
+
+
+
+
+			
 			if (image.height < 50 || image.width < 50){
 				if (ops.dmMail && dm) return mail.mailDM(message, "tiny");
 				errorMessage(postedTime, dm, `${message.author.username}${message.author} sent an image, which was refused for being Empty/Tiny`);
@@ -705,12 +734,12 @@ client.on("error", (error) => {
 		console.error(`[${dateToTime(new Date())}]: Balancing imageLogCount`);
 	}
 	if (loaded) {
-		console.error(`[${dateToTime(new Date())}]: Resumed! Refreshing Activity...`);
+		//console.error(`[${dateToTime(new Date())}]: Resumed! Refreshing Activity...`);
 		client.user.setActivity(act, { type: "PLAYING" });
 	}
 })
 .on("shardDisconnect", (evt, id) => {
-	console.error(`[${dateToTime(new Date())}]: Disconnected!`);
+	//console.error(`[${dateToTime(new Date())}]: Disconnected!`);
 	console.log(evt, id);
 })
 .on("shardReady", (id, una) => {
@@ -720,14 +749,14 @@ client.on("error", (error) => {
 		console.error(`[${dateToTime(new Date())}]: Balancing imageLogCount`);
 	}
 	if (loaded) {
-		console.error(`[${dateToTime(new Date())}]: Reconnected! Refreshing Activity...`);
+		//console.error(`[${dateToTime(new Date())}]: Reconnected! Refreshing Activity...`);
 		console.error(id, una);
 		client.user.setActivity(act, { type: "PLAYING" });
 	}
 })
 .on("shardReconnecting", (id) => {
 	if (loaded) {
-		console.error(`[${dateToTime(new Date())}]: Reconnecting... [${id}]`);
+		//console.error(`[${dateToTime(new Date())}]: Reconnecting... [${id}]`);
 	}
 });
 
