@@ -411,7 +411,12 @@ client.once("ready", async () => {
 		const profile = (ops.profileChannel) ? client.channels.cache.get(ops.profileChannel) : undefined;
 		if (message.channel == profile) return; // Profile channel? Cancel
 		if (message.author.bot && message.author.id != "155149108183695360" && message.author.id != "470722245824610306") return; // Bot? Cancel
-		if (message.guild.id === '873942903364399124' && message.mentions.has(client.user) && message.channel.type != "DM") {message.reply('If you need help please DM me, or tag `@staff`')}; // ADDED FOR PREMIER
+		
+		// Check if message is from a guild before accessing guild properties
+		if (message.guild && message.guild.id === '873942903364399124' && message.mentions.has(client.user) && message.channel.type != "DM") {
+			message.reply('If you need help please DM me, or tag `@staff`'); // ADDED FOR PREMIER
+		}
+
 		if (message.content == `${client.user.toString().slice(0, 2) + "!" + client.user.toString().slice(2, client.user.toString().length)} wassup` || message.content == `${client.user} wassup`) return message.reply("nm, you?");
 		if (message.content == `${client.user.toString().slice(0, 2) + "!" + client.user.toString().slice(2, client.user.toString().length)} prefix` || message.content == `${client.user} prefix`) return message.reply(`\`${ops.prefix}\`${(ops.prefix2) ? ` or \`${ops.prefix2}\`` : ""}`);
 		const postedTime = new Date();
@@ -468,7 +473,7 @@ client.once("ready", async () => {
 				const fileType = image.url.split(".").pop().toLowerCase();
 				const acceptedFileTypes = ["png", "jpg", "jpeg", "jfif", "tiff", "bmp"];
 				const logs = (ops.logsChannel) ? client.channels.cache.get(ops.logsChannel) : undefined;
-				
+
 				if (!acceptedFileTypes.includes(fileType)) {
 					if (!image.contentType) {
 						// Log the details when contentType is null
@@ -491,7 +496,7 @@ client.once("ready", async () => {
 						return;
 					}
 				}
-				
+
 				//fix for issue end. orignal code
 
 				/*
