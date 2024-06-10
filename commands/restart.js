@@ -3,6 +3,9 @@ const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 
+// Load the keys from the keys.json file
+const keys = require(path.resolve(__dirname, '../server/keys.json'));
+
 module.exports = {
     name: "restart-bot-server",
     description: "Restarts the bot. I haven't (can't) thoroughly tested this, so sorry if it doesn't work",
@@ -13,27 +16,22 @@ module.exports = {
     execute(message) {
         return new Promise(function(resolve, reject) {
             console.log(`${message.author.username}${message.author} force quit the server at ${message.createdAt.toLocaleString()}.`);
-            const currentWorkingDir = process.cwd();
-            console.log(`Current working directory: ${currentWorkingDir}`); // Log the current working directory
+            console.log(`Current working directory: ${process.cwd()}`); // Log the current working directory
 
-            // Move up one level from the current directory
-            const parentDir = path.resolve(currentWorkingDir, '..');
-            console.log(`Parent directory: ${parentDir}`); // Log the parent directory
+            const gitRepoPath = keys.dir; // Get the Git repository path from keys.json
 
-            // Check if the parent directory contains a .git folder
-            const gitDir = path.join(parentDir, '.git');
-            if (!fs.existsSync(gitDir)) {
-                console.error(`.git directory not found in ${parentDir}`);
-                replyNoMention(message, "Failed to find the .git directory in the parent folder.");
-                reject(new Error(".git directory not found in the parent folder."));
+            if (!gitRepoPath || !fs.existsSync(path.join(gitRepoPath, '.git'))) {
+                console.error(`No git repository found at specified path: ${gitRepoPath}`);
+                replyNoMention(message, "Failed to find the git repository at the specified path.");
+                reject(new Error("Git repository not found at the specified path."));
                 return;
             }
 
-            console.log(`Found .git directory in: ${parentDir}`); // Log the found git directory
+            console.log(`Git repository found at: ${gitRepoPath}`); // Log the found git root directory
 
             replyNoMention(message, "Pulling latest changes from Git and restarting...").then(() => {
-                // Run git pull command in the parent directory
-                exec("git pull", { cwd: parentDir }, (error, stdout, stderr) => {
+                // Run git pull command in the specified git repository path
+                exec("git pull", { cwd: gitRepoPath }, (error, stdout, stderr) => {
                     if (error) {
                         console.error(`Error during git pull: ${error.message}`);
                         replyNoMention(message, `Failed to pull from git: ${error.message}`);
