@@ -19,19 +19,31 @@ module.exports = {
             console.log(`Current working directory: ${process.cwd()}`); // Log the current working directory
 
             const gitRepoPath = keys.dir; // Get the Git repository path from keys.json
+            console.log(`Git repository path from keys.json: ${gitRepoPath}`); // Log the path from keys.json
 
-            if (!gitRepoPath || !fs.existsSync(path.join(gitRepoPath, '.git'))) {
-                console.error(`No git repository found at specified path: ${gitRepoPath}`);
+            if (!gitRepoPath) {
+                console.error(`Git repository path is not defined in keys.json`);
+                replyNoMention(message, "Git repository path is not defined in the configuration.");
+                reject(new Error("Git repository path is not defined in the configuration."));
+                return;
+            }
+
+            const resolvedGitRepoPath = path.resolve(gitRepoPath);
+            console.log(`Resolved git repository path: ${resolvedGitRepoPath}`); // Log the resolved path
+
+            if (!fs.existsSync(path.join(resolvedGitRepoPath, '.git'))) {
+                console.error(`No git repository found at specified path: ${resolvedGitRepoPath}`);
                 replyNoMention(message, "Failed to find the git repository at the specified path.");
                 reject(new Error("Git repository not found at the specified path."));
                 return;
             }
 
-            console.log(`Git repository found at: ${gitRepoPath}`); // Log the found git root directory
+            console.log(`Git repository found at: ${resolvedGitRepoPath}`); // Log the found git root directory
 
             replyNoMention(message, "Pulling latest changes from Git and restarting...").then(() => {
                 // Run git pull command in the specified git repository path
-                exec("git pull", { cwd: gitRepoPath }, (error, stdout, stderr) => {
+                exec("git pull", { cwd: resolvedGitRepoPath }, (error, stdout, stderr) => {
+                    console.log(`Executing git pull in directory: ${resolvedGitRepoPath}`); // Log the execution directory
                     if (error) {
                         console.error(`Error during git pull: ${error.message}`);
                         replyNoMention(message, `Failed to pull from git: ${error.message}`);
