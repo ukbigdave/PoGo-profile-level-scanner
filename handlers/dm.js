@@ -167,13 +167,15 @@ module.exports = {
 				.setTitle("New Ticket Created")
 				.addField("\u200b", `**${messagetxtReplace(messagetxt.dmOpen, member.user)}**`);
 				
-				if (message.guild.id === '873942903364399124') {
-					await channel.send({ content: `${member} (${member.id}) \n<@&892415815775838209>`, embeds: [embedStart] });
-					console.log(`Premier Ticket`);
-				} else {
-					await channel.send({ content: `${member} (${member.id})`, embeds: [embedStart] });
-					console.log(`30+ Ticket`);
-				}
+                // Get the guild of the channel and check its ID
+                if (channel.guild && channel.guild.id === '873942903364399124') {
+                    await channel.send({ content: `${member} (${member.id}) \n<@&892415815775838209>`, embeds: [embedStart] });
+                    console.log(`Premier Ticket`);
+                } else {
+                    await channel.send({ content: `${member} (${member.id})`, embeds: [embedStart] });
+                    console.log(`30+ Ticket`);
+                }
+
 				if (status && ops.dmScanning) {
 					await checkStatus(status, message, channel, level);
 				}
