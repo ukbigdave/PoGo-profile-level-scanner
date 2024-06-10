@@ -15,17 +15,12 @@ module.exports = {
     type: "Admin",
     execute(message) {
         console.log(`${message.author.username}${message.author} force quit the server at ${message.createdAt.toLocaleString()}.`);
-        console.log(`Current working directory: ${process.cwd()}`);
+        const currentDir = process.cwd();
+        console.log(`Current working directory: ${currentDir}`);
 
-        const gitRepoPath = keys.dir;
-        console.log(`Git repository path from keys.json: ${gitRepoPath}`);
-
-        if (!gitRepoPath) {
-            const errorMsg = "Git repository path is not defined in the configuration.";
-            console.error(errorMsg);
-            replyNoMention(message, errorMsg);
-            return Promise.reject(new Error(errorMsg));
-        }
+        let gitRepoPath = keys.dir || currentDir; // Use the current directory as fallback
+        console.log(`Git repository path from keys.json: ${keys.dir}`);
+        console.log(`Using git repository path: ${gitRepoPath}`);
 
         const resolvedGitRepoPath = path.resolve(gitRepoPath);
         console.log(`Resolved git repository path: ${resolvedGitRepoPath}`);
