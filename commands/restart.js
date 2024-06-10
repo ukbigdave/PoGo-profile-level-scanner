@@ -14,48 +14,46 @@ module.exports = {
     guildOnly: true,
     type: "Admin",
     execute(message) {
-        return new Promise(function(resolve, reject) {
-            console.log(`${message.author.username}${message.author} force quit the server at ${message.createdAt.toLocaleString()}.`);
-            console.log(`Current working directory: ${process.cwd()}`); // Log the current working directory
+        console.log(`${message.author.username}${message.author} force quit the server at ${message.createdAt.toLocaleString()}.`);
+        console.log(`Current working directory: ${process.cwd()}`);
 
-            const gitRepoPath = keys.dir; // Get the Git repository path from keys.json
-            console.log(`Git repository path from keys.json: ${gitRepoPath}`); // Log the path from keys.json
+        const gitRepoPath = keys.dir;
+        console.log(`Git repository path from keys.json: ${gitRepoPath}`);
 
-            if (!gitRepoPath) {
-                console.error(`Git repository path is not defined in keys.json`);
-                replyNoMention(message, "Git repository path is not defined in the configuration.");
-                reject(new Error("Git repository path is not defined in the configuration."));
-                return;
-            }
+        if (!gitRepoPath) {
+            const errorMsg = "Git repository path is not defined in the configuration.";
+            console.error(errorMsg);
+            replyNoMention(message, errorMsg);
+            return Promise.reject(new Error(errorMsg));
+        }
 
-            const resolvedGitRepoPath = path.resolve(gitRepoPath);
-            console.log(`Resolved git repository path: ${resolvedGitRepoPath}`); // Log the resolved path
+        const resolvedGitRepoPath = path.resolve(gitRepoPath);
+        console.log(`Resolved git repository path: ${resolvedGitRepoPath}`);
 
-            if (!fs.existsSync(path.join(resolvedGitRepoPath, '.git'))) {
-                console.error(`No git repository found at specified path: ${resolvedGitRepoPath}`);
-                replyNoMention(message, "Failed to find the git repository at the specified path.");
-                reject(new Error("Git repository not found at the specified path."));
-                return;
-            }
+        if (!fs.existsSync(path.join(resolvedGitRepoPath, '.git'))) {
+            const errorMsg = `No git repository found at specified path: ${resolvedGitRepoPath}`;
+            console.error(errorMsg);
+            replyNoMention(message, errorMsg);
+            return Promise.reject(new Error(errorMsg));
+        }
 
-            console.log(`Git repository found at: ${resolvedGitRepoPath}`); // Log the found git root directory
+        console.log(`Git repository found at: ${resolvedGitRepoPath}`);
 
-            replyNoMention(message, "Pulling latest changes from Git and restarting...").then(() => {
-                // Run git pull command in the specified git repository path
+        return replyNoMention(message, "Pulling latest changes from Git and restarting...").then(() => {
+            return new Promise((resolve, reject) => {
+                console.log(`Executing git pull in directory: ${resolvedGitRepoPath}`);
                 exec("git pull", { cwd: resolvedGitRepoPath }, (error, stdout, stderr) => {
-                    console.log(`Executing git pull in directory: ${resolvedGitRepoPath}`); // Log the execution directory
                     if (error) {
+                        const errorMsg = `Failed to pull from git: ${error.message}`;
                         console.error(`Error during git pull: ${error.message}`);
-                        replyNoMention(message, `Failed to pull from git: ${error.message}`);
-                        reject(error);
-                        return;
+                        replyNoMention(message, errorMsg);
+                        return reject(error);
                     }
                     if (stderr) {
                         console.error(`Git pull stderr: ${stderr}`);
                     }
                     console.log(`Git pull stdout: ${stdout}`);
 
-                    // After git pull, restart the bot
                     resolve();
                     setTimeout(() => {
                         process.exit(0);
