@@ -170,10 +170,10 @@ module.exports = {
                 // Get the guild of the channel and check its ID
                 if (channel.guild && channel.guild.id === '873942903364399124') {
                     await channel.send({ content: `${member} (${member.id}) \n<@&892415815775838209>`, embeds: [embedStart] });
-                    console.log(`Premier Ticket`);
+                    console.log(`[${dateToTime(new Date())}]: Premier Ticket`);
                 } else {
                     await channel.send({ content: `${member} (${member.id})`, embeds: [embedStart] });
-                    console.log(`30+ Ticket`);
+                    console.log(`[${dateToTime(new Date())}]: 30+ Ticket`);
                 }
 
 				if (status && ops.dmScanning) {
