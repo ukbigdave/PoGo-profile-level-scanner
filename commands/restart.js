@@ -11,9 +11,11 @@ module.exports = {
     execute(message) {
         return new Promise(function(resolve, reject) {
             console.log(`${message.author.username}${message.author} force quit the server at ${message.createdAt.toLocaleString()}.`);
+            console.log(`Current working directory: ${process.cwd()}`); // Log the current working directory
+
             replyNoMention(message, "Pulling latest changes from Git and restarting...").then(() => {
                 // Run git pull command
-                exec("git pull", (error, stdout, stderr) => {
+                exec("git pull", { cwd: process.cwd() }, (error, stdout, stderr) => {
                     if (error) {
                         console.error(`Error during git pull: ${error.message}`);
                         replyNoMention(message, `Failed to pull from git: ${error.message}`);
