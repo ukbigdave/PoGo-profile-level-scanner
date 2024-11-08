@@ -411,7 +411,7 @@ client.once("ready", async () => {
 		const profile = (ops.profileChannel) ? client.channels.cache.get(ops.profileChannel) : undefined;
 		if (message.channel == profile) return; // Profile channel? Cancel
 		if (message.author.bot && message.author.id != "155149108183695360" && message.author.id != "470722245824610306") return; // Bot? Cancel
-		
+
 		// Check if message is from a guild before accessing guild properties
 		if (message.guild && message.guild.id === '873942903364399124' && message.mentions.has(client.user) && message.channel.type != "DM") {
 			message.reply('If you need help please DM me, or tag `@staff`'); // ADDED FOR PREMIER
@@ -816,3 +816,12 @@ process.on("uncaughtException", (err) => {
 		});
 		else process.exit(1);
 	});
+
+const originalConsoleLog = console.log;
+
+console.log = function (...args) {
+	if (args.includes("Empty page")) {
+		console.trace("Trace for 'Empty page' log:");
+	}
+	originalConsoleLog.apply(console, args);
+};
