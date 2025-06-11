@@ -1,13 +1,13 @@
 const Discord = require("discord.js"),
-			{ crop } = require("../func/crop.js"),
-			{ saveFile } = require("../func/saveFile.js"),
-			{ recog } = require("../func/recog.js"),
-			{ dateToTime, performanceLogger, replyNoMention, errorMessage } = require("../func/misc.js"),
-			mail = require("../handlers/dm.js"),
-			messagetxt = require("../server/messagetxt.js"),
-			{ messagetxtReplace } = require("../func/misc.js");
+	{ crop } = require("../func/crop.js"),
+	{ saveFile } = require("../func/saveFile.js"),
+	{ recog } = require("../func/recog.js"),
+	{ dateToTime, performanceLogger, replyNoMention, errorMessage } = require("../func/misc.js"),
+	mail = require("../handlers/dm.js"),
+	messagetxt = require("../server/messagetxt.js"),
+	{ messagetxtReplace } = require("../func/misc.js");
 
-function handleImage(message, postedTime, wasDelayed){
+function handleImage(message, postedTime, wasDelayed) {
 	return new Promise((resolve, reject) => {
 		const dm = (message.channel.type == "DM") ? true : false;
 		const image = message.attachments.first();
@@ -15,7 +15,7 @@ function handleImage(message, postedTime, wasDelayed){
 		let logString = `[${dateToTime(postedTime)}]: ${(dm) ? "DM: " : ""}${message.author.username}${message.author} sent #${imgStats.imageLogCount + 1}`;
 		try {
 			const logAdd = new Promise((res) => {
-				if (wasDelayed == true){
+				if (wasDelayed == true) {
 					const delayAmount = Math.round((Date.now() - postedTime) / 1000);
 					logString = logString + `. Delayed ${delayAmount}s. ${imgStats.currentlyImage - 1} more`;
 					res();
@@ -23,7 +23,7 @@ function handleImage(message, postedTime, wasDelayed){
 			});
 			logAdd.then(() => {
 				const writeFile = new Promise((res) => {
-					if (ops.saveLocalCopy){
+					if (ops.saveLocalCopy) {
 						saveFile(image).then(() => {
 							if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount + 1}: Written to disk\t`, postedTime.getTime());
 							res();
@@ -38,15 +38,15 @@ function handleImage(message, postedTime, wasDelayed){
 					if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount + 1}: Crop started\t`, postedTime.getTime());
 					crop(message.attachments.first()).then((imgBuff) => {
 						if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount + 1}: Crop finished\t`, postedTime.getTime());
-						const testSend = new Promise(function(res) {
-							if (ops.testMode && !dm){
+						const testSend = new Promise(function (res) {
+							if (ops.testMode && !dm) {
 								const imgAttach = new Discord.MessageAttachment(imgBuff, image.url);
-								message.reply({ content:"Test mode. This is the image fed to the OCR system:", files:[imgAttach] }).then(() => {
+								message.reply({ content: "Test mode. This is the image fed to the OCR system:", files: [imgAttach] }).then(() => {
 									if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount + 1}: Test msg posted\t`, postedTime.getTime());
 									res();
 								}).catch(() => {
 									errorMessage(postedTime, dm, `Error: I can not reply to ${message.url}${message.channel}.\nContent of mesage: "${message.content}. Sending a backup message...`);
-									message.channel.send({ content: "Test mode. This is the image fed to the OCR system:", files:[imgAttach] }).then(() => {
+									message.channel.send({ content: "Test mode. This is the image fed to the OCR system:", files: [imgAttach] }).then(() => {
 										if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount + 1}: Test msg posted\t`, postedTime.getTime());
 										res();
 									});
@@ -55,7 +55,7 @@ function handleImage(message, postedTime, wasDelayed){
 								res();
 							}
 						});
-						const saveCropped = new Promise(function(res) {
+						const saveCropped = new Promise(function (res) {
 							if (ops.saveLocalCopy) {
 								saveFile([image, imgBuff]).then(() => {
 									if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount + 1}: Cropped written\t`, postedTime.getTime());
@@ -73,13 +73,13 @@ function handleImage(message, postedTime, wasDelayed){
 								errorMessage(postedTime, dm, `Error: Could not react 👀 (eyes) to message: ${message.url}\nContent of mesage: "${message.content}"`);
 							});
 							recog(imgBuff, message).then(([level, failed, text]) => {
-								if (ops.testMode && !dm){
+								if (ops.testMode && !dm) {
 									replyNoMention(message, `Test mode. This image ${(failed) ? `failed. Scanned text: ${text}` : `was scanned at level: ${level}.`} `).catch(() => {
 										errorMessage(postedTime, dm, `Error: Could not reply to ${message.url}${message.channel}.\nContent of mesage: "${message.content}. Sending a backup message...`);
 										message.channel.send(`Test mode. This image ${(failed) ? "failed." : `was scanned at level: ${level}.`} `);
 									});
 								}
-								if (failed || level > 50 || level < 1){
+								if (failed || level > 50 || level < 1) {
 									console.log(logString + `. I failed to find a number. Scanned text: ${text}.`);
 									if (dm && ops.dmMail) {
 										mail.mailDM(message);
@@ -104,7 +104,7 @@ function handleImage(message, postedTime, wasDelayed){
 									if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount + 1}: Recog finished\t`, postedTime.getTime());
 									message.client.commands.get("confirm-screenshot").execute([message, postedTime], [message.author.id, level]).then((addToLogString) => {
 										if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount}: Roles confirmed. Total time:`, postedTime.getTime());
-										console.log(logString + addToLogString + ` Time: ${(Date.now() - currentTime) / 1000}s`);
+										//(logString + addToLogString + ` Time: ${(Date.now() - currentTime) / 1000}s`);
 									});
 									resolve();
 									if (!dm && ops.deleteScreens) message.delete().catch(() => {
@@ -114,7 +114,7 @@ function handleImage(message, postedTime, wasDelayed){
 							});
 						});
 					}).catch((err) => {
-						if (err == "crash"){
+						if (err == "crash") {
 							errorMessage(postedTime, dm, "Error: An error occured while buffering \"imgTwo\".");
 							// errorMessage(postedTime, dm, "Some info for soul:");
 							// console.error("\nimage: ");
@@ -128,7 +128,7 @@ function handleImage(message, postedTime, wasDelayed){
 					});
 				});
 			});
-		} catch (error){ // this catch block rarely fires
+		} catch (error) { // this catch block rarely fires
 			logString = logString + ", but an uncaught error occured.";
 			console.log(logString);
 			console.error(logString + ` Error: ${error}`);
