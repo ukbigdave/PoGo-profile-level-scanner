@@ -79,7 +79,7 @@ function handleImage(message, postedTime, wasDelayed) {
 										message.channel.send(`Test mode. This image ${(failed) ? "failed." : `was scanned at level: ${level}.`} `);
 									});
 								}
-								if (failed || level > 50 || level < 1) {
+								if (failed || level > 80 || level < 1) {
 									console.log(logString + `. I failed to find a number. Scanned text: ${text}.`);
 									if (dm && ops.dmMail) {
 										mail.mailDM(message);

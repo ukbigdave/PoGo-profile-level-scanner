@@ -1,9 +1,9 @@
 const { saveStats } = require("../func/stats.js"),
-			{ dateToTime, performanceLogger } = require("../func/misc.js"),
-			{ saveBlacklist } = require("../func/saveBlacklist.js"),
-			mail = require("../handlers/dm.js"),
-			messagetxt = require("../server/messagetxt.js"),
-			{ messagetxtReplace } = require("../func/misc.js");
+	{ dateToTime, performanceLogger } = require("../func/misc.js"),
+	{ saveBlacklist } = require("../func/saveBlacklist.js"),
+	mail = require("../handlers/dm.js"),
+	messagetxt = require("../server/messagetxt.js"),
+	{ messagetxtReplace } = require("../func/misc.js");
 
 // const server = (ops.serverID) ? client.guilds.cache.get(ops.serverID) : undefined;
 // const logs = (ops.logsChannel) ? client.channels.cache.get(ops.logsChannel) : undefined;
@@ -13,22 +13,22 @@ const { saveStats } = require("../func/stats.js"),
 module.exports = {
 	name: "confirm-screenshot",
 	description: "Manually approve/reject a user by telling the bot the user's level. `level` can be omitted, the bot will still approve.",
-  aliases: ["c", "con", "confirm"],
-  usage: `\`${ops.prefix}c <@mention/ID> [level]\``,
-	guildOnly:true,
-  args: true,
+	aliases: ["c", "con", "confirm"],
+	usage: `\`${ops.prefix}c <@mention/ID> [level]\``,
+	guildOnly: true,
+	args: true,
 	scanningOnly: true,
-	type:"Screenshots",
+	type: "Screenshots",
 	execute(input, args, button) {
 		// This command uses input rather than message, since it can be called via a command OR by the main screenshot process
-		return new Promise(function(bigResolve) {
+		return new Promise(function (bigResolve) {
 			const execTime = dateToTime(new Date());
-			const prom = new Promise(function(resolve) {
+			const prom = new Promise(function (resolve) {
 				if (input[1] == undefined) {
 					const inCommand = true;
 					const message = (button) ? input.message : input; // If called by command, message = input, if by button, input.message
 					const server = (ops.serverID) ? message.client.guilds.cache.get(ops.serverID) : undefined;
-					if (args[2] || args[1] > 50 || args[1] < 1 || (args[1] && isNaN(args[1]))){
+					if (args[2] || args[1] > 80 || args[1] < 1 || (args[1] && isNaN(args[1]))) {
 						message.reply(`Please provide only one user and one level in the format \`${ops.prefix}c <@mention/ID> [level]\``);
 						bigResolve(", but it failed, since the format was wrong.");
 						return;
@@ -51,10 +51,10 @@ module.exports = {
 						const info = [inCommand, message, false, false, level, id, memb];
 						resolve(info);
 					}).catch((err) => {
-						if (err.name == "DiscordAPIError"){
+						if (err.name == "DiscordAPIError") {
 							if (mentions.size == 1) {
 								const memb = mentions.first();
-								if (memb === undefined){
+								if (memb === undefined) {
 									message.reply("I could not find this member, they may have left the server.");
 									bigResolve(`, but it failed, since I couldn't fetch member ${id}.`);
 									return;
@@ -100,14 +100,14 @@ module.exports = {
 			// member leaves midway === null
 			// role id === undefined
 			// any other mistype === undefined
-			prom.then(function([inCommand, message, postedTime, image, level, id, member]) {
+			prom.then(function ([inCommand, message, postedTime, image, level, id, member]) {
 				const server = (ops.serverID) ? message.client.guilds.cache.get(ops.serverID) : undefined;
 				const logs = (ops.logsChannel) ? message.client.channels.cache.get(ops.logsChannel) : undefined;
 				const channel = (ops.screenshotScanning && ops.screenshotChannel) ? message.client.channels.cache.get(ops.screenshotChannel) : undefined;
 				const profile = (ops.profileChannel) ? message.client.channels.cache.get(ops.profileChannel) : undefined;
 				const badges = (ops.badgeChannel) ? message.client.channels.cache.get(ops.badgeChannel) : undefined;
 				const dm = (message.channel.type == "DM") ? true : false;
-				if (member === null){
+				if (member === null) {
 					console.error(`[${execTime}]: Error: #${id} left the server before they could be processed.`);
 					if (inCommand) {
 						message.reply("That member has *just* left the server, and can not be processed.");
@@ -124,8 +124,8 @@ module.exports = {
 				}
 				let logString;
 				if (inCommand) logString = ` and tagged ${member.user.username}${member.user}`;
-				if (!(level == "missing") && (isNaN(level) || level > 50 || level < 1)){
-					console.error(`[${execTime}]: Error: Level - ${level} - is NaN, >50, or <1 despite being checked already... Impossible error? Tell Soul pls`);
+				if (!(level == "missing") && (isNaN(level) || level > 80 || level < 1)) {
+					console.error(`[${execTime}]: Error: Level - ${level} - is NaN, >80, or <1 despite being checked already... Impossible error? Tell Soul pls`);
 					message.reply("Impossible error. Please tell the developer");
 					bigResolve((logString || "") + ", but it failed, due to an impossible error regarding level checking.");
 					return;
@@ -133,9 +133,9 @@ module.exports = {
 				const msgtxt = [];
 				const give30 = (level >= (ops.targetLevel || 30) || level == "missing") ? true : false;
 				const give40 = (level >= 40) ? true : false;
-				const give50 = (level == 50) ? true : false;
+				const give50 = (ops.level50Role !== "0" && level >= 50) ? true : false;
 				if (!give30) {
-					if (member.roles.cache.has(ops.targetLevelRole)){
+					if (member.roles.cache.has(ops.targetLevelRole)) {
 						if (ops.dmMail && dm) return mail.mailDM(message, "already", level);
 						else if (!inCommand) member.send(`I'll be honest, this is weird.
 Why would you send a screenshot of an account under level when you already have the role that means you are above the gate level...???
@@ -162,7 +162,7 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 						saveBlacklist(blacklist);
 						bigResolve((logString || "") + `. Blacklisted for ${ops.blacklistTime / 86400000} day${(ops.blacklistTime / 86400000 == 1) ? "" : "s"}. Level ${level}.`);
 						if (ops.dmMail) mail.alertMsg(message.author, "under", level);
-						if (!inCommand) logs.send({ content: `${(dm) ? "Sent in a DM\n" : ""}User: ${member}\nResult: \`${level}\`\nBlacklisted for ${ops.blacklistTime / 86400000} day${(ops.blacklistTime / 86400000 == 1) ? "" : "s"}`, files:[image] });
+						if (!inCommand) logs.send({ content: `${(dm) ? "Sent in a DM\n" : ""}User: ${member}\nResult: \`${level}\`\nBlacklisted for ${ops.blacklistTime / 86400000} day${(ops.blacklistTime / 86400000 == 1) ? "" : "s"}`, files: [image] });
 						else logs.send({ content: `${message.author.username}#${message.author.id} used \`${ops.prefix}confirm\` and tagged ${member}, who was rejected and blacklisted for ${ops.blacklistTime / 86400000} day${(ops.blacklistTime / 86400000 == 1) ? "" : "s"}, for being under ${ops.targetLevel}.` });
 					} else { // Due to the if logic, this block is only accessable if level is one less than targetLevel AND blacklistOneOff is false
 						bigResolve((logString || "") + `. No action taken. Level ${level}.`);
@@ -175,9 +175,9 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 							const rejButton = new Discord.MessageButton().setCustomId("rej").setLabel("Reject").setStyle("DANGER");
 							const canButton = new Discord.MessageButton().setCustomId("canc").setLabel("Cancel").setStyle("DANGER");
 							const row1 = new Discord.MessageActionRow()
-							.addComponents([appButton, rejButton]);
+								.addComponents([appButton, rejButton]);
 							const row2 = new Discord.MessageActionRow()
-							.addComponents([appButton, canButton]);
+								.addComponents([appButton, canButton]);
 							if (ops.dmMail && dm) {
 								setTimeout(async () => {
 									const mailResult = await mail.mailDM(message, "off-by-one", level, row1);
@@ -192,7 +192,7 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 									messsageData.content = messageContent;
 									logs.send(messsageData);
 								}, 500);
-							}	else {
+							} else {
 								const messageContent = `${(dm) ? "Sent in a DM\n" : ""}User: ${member}\nResult: \`${level}\`\nNo action taken.${(ops.tagModOneOff && !dm) ? `\nManual review, <@&${ops.modRole}>?` : ""}`;
 								logs.send({ files: [image], content: messageContent, components: [row2] });
 							}
@@ -202,9 +202,9 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 					saveStats(level);
 					return;
 				} else {
-					new Promise(function(resolve) {
-						if (member.roles.cache.has(ops.targetLevelRole)){
-							if (inCommand){
+					new Promise(function (resolve) {
+						if (member.roles.cache.has(ops.targetLevelRole)) {
+							if (inCommand) {
 								resolve(false);
 							} else {
 								msgtxt.push(messagetxtReplace(messagetxt.rrPossessed, member, level));
@@ -221,8 +221,8 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 							setTimeout(() => {
 								member.roles.add(server.roles.cache.get(ops.targetLevelRole)).catch(console.error);
 							}, 250);
-							if (ops.targetLevelBadge){
-								if (ops.badgeChannel && badges){
+							if (ops.targetLevelBadge) {
+								if (ops.badgeChannel && badges) {
 									badges.send(`<@428187007965986826> gb ${ops.targetLevelBadge} ${id}`);
 								} else console.error(`[${execTime}]: Error. badgeChannel is not set.`);
 							}
@@ -239,8 +239,8 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 									if (!member.roles.cache.has(ops.level40Role)) {
 										member.roles.add(server.roles.cache.get(ops.level40Role)).catch(console.error);
 										resolve(true);
-										if (ops.level40Badge){
-											if (ops.badgeChannel){
+										if (ops.level40Badge) {
+											if (ops.badgeChannel) {
 												badges.send(`<@428187007965986826> gb ${ops.level40Badge} ${id}`);
 											} else console.error(`[${execTime}]: Error. badgeChannel is not set.`);
 										}
@@ -260,8 +260,8 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 									if (!member.roles.cache.has(ops.level50Role)) {
 										member.roles.add(server.roles.cache.get(ops.level50Role)).catch(console.error);
 										resolve(true);
-										if (ops.level50Badge){
-											if (ops.badgeChannel){
+										if (ops.level50Badge) {
+											if (ops.badgeChannel) {
 												badges.send(`<@428187007965986826> gb ${ops.level50Badge} ${id}`);
 											} else console.error(`[${execTime}]: Error. badgeChannel is not set.`);
 										}
@@ -278,7 +278,7 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 						Promise.all([g40, g50]).then((vals) => {
 							const given40 = vals[0];
 							const given50 = vals[1];
-							if ((given30 || given40 || given50)){
+							if ((given30 || given40 || given50)) {
 								if (given40 || given50) msgtxt.push(`${(msgtxt.length == 0) ? `Hey ${member}, ` : (!given30) ? ", however," : "\nAlso,"} we congratulate you on achieving such a high level.\nFor this you have been given the ${(given40) ? "\"Level 40\" " : ""}${(given50) ? (given40) ? "and the \"Level 50\" " : "\"Level 50\" " : ""}vanity role${(given40 && given50) ? "s" : ""}`);
 								member.send(msgtxt.join("")).catch((err) => {
 									if (err.httpStatus == "403") {
@@ -298,7 +298,7 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 								});
 								message.reply("That person already had the roles you asked me to give them. Check the command or the user and try again.").then((msg) => {
 									setTimeout(() => {
-										if (ops.msgDeleteTime){
+										if (ops.msgDeleteTime) {
 											msg.delete().catch(() => {
 												console.error(`[${execTime}]: Error: Could not delete message: ${msg.url}\nContent of mesage: "${msg.content}"`);
 											});
@@ -308,8 +308,8 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 									console.error(`[${execTime}]: Error: Could not reply to message: ${message.url}\nContent of mesage: "${message.content}"`);
 								});
 							}
-							if (!inCommand){
-								if (!given30 && !given40 && !given50){
+							if (!inCommand) {
+								if (!given30 && !given40 && !given50) {
 									if (ops.dmMail && dm) {
 										mail.mailDM(message, "already", level);
 										return;
@@ -324,7 +324,7 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 										if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount}: Log img posted\t`, postedTime.getTime()); // testo?
 									});
 								}
-							} else if (!button){
+							} else if (!button) {
 								logs.send({ content: `${message.author.username}#${message.author.id} used \`${ops.prefix}confirm\` and tagged ${member}, who was given ${(!given30 && !given40 && !given50) ? "no roles" : ""}${(given30 ? "RR" : "")}${(given40 ? `${given30 ? ", " : ""}Level 40` : "")}${(given50 ? `${given30 || given40 ? ", " : ""}Level 50` : "")}` });
 							} else {
 								logs.send({ content: `${input.user.username}#${input.user.id} used \`${ops.prefix}confirm\` and tagged ${member}, who was given ${(!given30 && !given40 && !given50) ? "no roles" : ""}${(given30 ? "RR" : "")}${(given40 ? `${given30 ? ", " : ""}Level 40` : "")}${(given50 ? `${given30 || given40 ? ", " : ""}Level 50` : "")}` });
@@ -340,16 +340,16 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 	},
 };
 
-function deleteStuff(message, execTime, id){
+function deleteStuff(message, execTime, id) {
 	const channel = (ops.screenshotScanning && ops.screenshotChannel) ? message.client.channels.cache.get(ops.screenshotChannel) : undefined;
-	if (ops.msgDeleteTime && !(message.channel.parent && message.channel.parentId == ops.mailCategory)){
-		setTimeout(function() {
+	if (ops.msgDeleteTime && !(message.channel.parent && message.channel.parentId == ops.mailCategory)) {
+		setTimeout(function () {
 			message.delete().catch(() => {
 				console.error(`[${execTime}]: Error: Could not delete message: ${message.url}\nContent of mesage: "${message.content}"`);
 			});
 		}, ops.msgDeleteTime);
 	}
-	channel.messages.fetch({ limit:10 }).then(msgs => {
+	channel.messages.fetch({ limit: 10 }).then(msgs => {
 		const selfMsgs = msgs.filter(msg =>
 			((msg.author == message.client.user) && (msg.mentions.members.has(id)) && !msg.pinned && msg.content.slice(0, 4) != "Hey,") // bot messages
 			|| ((msg.author.id == id) && !msg.pinned)); // member messages

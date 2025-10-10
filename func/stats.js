@@ -1,14 +1,14 @@
 const fs = require("fs"),
-			path = require("path"),
-			Discord = require("discord.js"),
-			{ dateToTime } = require("../func/misc.js");
+	path = require("path"),
+	Discord = require("discord.js"),
+	{ dateToTime } = require("../func/misc.js");
 let stats = new Discord.Collection();
 
 // Updates the stats and saves the stats to file
 function saveStats(level) {
-	return new Promise(function(resolve) {
-		if (isNaN(level) || level > 50 || level < 1){
-			if (level == "Failure"){
+	return new Promise(function (resolve) {
+		if (isNaN(level) || level > 80 || level < 1) {
+			if (level == "Failure") {
 				stats.set("Attempts", stats.get("Attempts") + 1);
 				stats.set("Fails", stats.get("Fails") + 1);
 			} else if (level == "black") {
@@ -40,7 +40,7 @@ function saveStats(level) {
 			stats.set(parseFloat(level), stats.get(parseFloat(level)) + 1);
 		}
 		fs.writeFile(path.resolve(__dirname, "../server/stats.json"), JSON.stringify(Array.from(stats)), (err) => {
-			if (err){
+			if (err) {
 				console.error(`[${dateToTime(new Date())}]: Error: An error occured while saving stats. Err:${err}`);
 				return;
 			} else {
@@ -53,13 +53,13 @@ function saveStats(level) {
 
 // Loads the stats from file
 function loadStats() {
-	return new Promise(function(resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		stats = new Discord.Collection();
 		new Promise((res) => {
 			try {
 				delete require.cache[require.resolve("../server/stats.json")];
 				res();
-			} catch (e){
+			} catch (e) {
 				if (e.code == "MODULE_NOT_FOUND") {
 					// do nothing
 					res();
@@ -76,8 +76,8 @@ function loadStats() {
 					res();
 				} catch (e) {
 					if (e.code == "MODULE_NOT_FOUND") {
-						fs.writeFile(path.resolve(__dirname, "../server/stats.json"), "[[\"Attempts\",0],[\"Declined-Blacklist\",0],[\"Declined-Left-Server\",0],[\"Declined-All-Roles\",0],[\"Declined-Wrong-Type\",0],[\"Manual-Unknown\",0],[\"Manual-Reversions\",0],[\"Fails\",0],[\"Under-30\",0],[30,0],[31,0],[32,0],[33,0],[34,0],[35,0],[36,0],[37,0],[38,0],[39,0],[40,0],[41,0],[42,0],[43,0],[44,0],[45,0],[46,0],[47,0],[48,0],[49,0],[50,0]]", (err) => {
-							if (err){
+						fs.writeFile(path.resolve(__dirname, "../server/stats.json"), "[[\"Attempts\",0],[\"Declined-Blacklist\",0],[\"Declined-Left-Server\",0],[\"Declined-All-Roles\",0],[\"Declined-Wrong-Type\",0],[\"Manual-Unknown\",0],[\"Manual-Reversions\",0],[\"Fails\",0],[\"Under-30\",0],[30,0],[31,0],[32,0],[33,0],[34,0],[35,0],[36,0],[37,0],[38,0],[39,0],[40,0],[41,0],[42,0],[43,0],[44,0],[45,0],[46,0],[47,0],[48,0],[49,0],[50,0],[51,0],[52,0],[53,0],[54,0],[55,0],[56,0],[57,0],[58,0],[59,0],[60,0],[61,0],[62,0],[63,0],[64,0],[65,0],[66,0],[67,0],[68,0],[69,0],[70,0],[71,0],[72,0],[73,0],[74,0],[75,0],[76,0],[77,0],[78,0],[79,0],[80,0]]", (err) => {
+							if (err) {
 								reject(`Error thrown when writing stats file. Error: ${err}`);
 								return;
 							}
@@ -85,13 +85,13 @@ function loadStats() {
 							statsJson = require("../server/stats.json");
 							res();
 						});
-					}	else {
+					} else {
 						reject(`Error thrown when loading stats (2). Error: ${e}`);
 						return;
 					}
 				}
 			}).then(() => {
-				for (const item of statsJson){
+				for (const item of statsJson) {
 					stats.set(item[0], item[1]);
 				}
 				console.log("\nStats loaded");
