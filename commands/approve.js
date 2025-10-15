@@ -279,7 +279,7 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 							const given40 = vals[0];
 							const given50 = vals[1];
 							if ((given30 || given40 || given50)) {
-								if (given40 || given50) msgtxt.push(`${(msgtxt.length == 0) ? `Hey ${member}, ` : (!given30) ? ", however," : "\nAlso,"} we congratulate you on achieving such a high level.\nFor this you have been given the ${(given40) ? "\"Level 40\" " : ""}${(given50) ? (given40) ? "and the \"Level 50\" " : "\"Level 50\" " : ""}vanity role${(given40 && given50) ? "s" : ""}`);
+								if (given40 || given50) msgtxt.push(`${(msgtxt.length == 0) ? `Hey ${member}, ` : (!given30) ? ", however," : "\nAlso,"} we congratulate you on achieving such a high level.\nFor this you have been given the ${(given40) ? "\"Level 40\" " : ""}${(given50) ? (given40) ? "and the \"Level 80\" " : "\"Level 80\" " : ""}vanity role${(given40 && given50) ? "s" : ""}`);
 								member.send(msgtxt.join("")).catch((err) => {
 									if (err.httpStatus == "403") {
 										console.error(`[${execTime}]: Error: Could not send msgtxt DM to ${member.user.username}${member.user}.`);
@@ -320,17 +320,17 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 									}
 								} else {
 									if (ops.dmMail) mail.alertMsg(message.author, "given", level, given30, given40, given50);
-									logs.send({ content: `${(dm) ? "Sent in a DM\n" : ""}User: ${member}\nResult: \`${level}\`\nRoles given: ${(given30 ? "RR" : "")}${(given40 ? `${given30 ? ", " : ""}Level 40` : "")}${(given50 ? `${given30 || given40 ? ", " : ""}Level 50` : "")}`, files: [image] }).then(() => {
+									logs.send({ content: `${(dm) ? "Sent in a DM\n" : ""}User: ${member}\nResult: \`${level}\`\nRoles given: ${(given30 ? "RR" : "")}${(given40 ? `${given30 ? ", " : ""}Level 40` : "")}${(given50 ? `${given30 || given40 ? ", " : ""}Level 80` : "")}`, files: [image] }).then(() => {
 										if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount}: Log img posted\t`, postedTime.getTime()); // testo?
 									});
 								}
 							} else if (!button) {
-								logs.send({ content: `${message.author.username}#${message.author.id} used \`${ops.prefix}confirm\` and tagged ${member}, who was given ${(!given30 && !given40 && !given50) ? "no roles" : ""}${(given30 ? "RR" : "")}${(given40 ? `${given30 ? ", " : ""}Level 40` : "")}${(given50 ? `${given30 || given40 ? ", " : ""}Level 50` : "")}` });
+								logs.send({ content: `${message.author.username}#${message.author.id} used \`${ops.prefix}confirm\` and tagged ${member}, who was given ${(!given30 && !given40 && !given50) ? "no roles" : ""}${(given30 ? "RR" : "")}${(given40 ? `${given30 ? ", " : ""}Level 40` : "")}${(given50 ? `${given30 || given40 ? ", " : ""}Level 80` : "")}` });
 							} else {
-								logs.send({ content: `${input.user.username}#${input.user.id} used \`${ops.prefix}confirm\` and tagged ${member}, who was given ${(!given30 && !given40 && !given50) ? "no roles" : ""}${(given30 ? "RR" : "")}${(given40 ? `${given30 ? ", " : ""}Level 40` : "")}${(given50 ? `${given30 || given40 ? ", " : ""}Level 50` : "")}` });
+								logs.send({ content: `${input.user.username}#${input.user.id} used \`${ops.prefix}confirm\` and tagged ${member}, who was given ${(!given30 && !given40 && !given50) ? "no roles" : ""}${(given30 ? "RR" : "")}${(given40 ? `${given30 ? ", " : ""}Level 40` : "")}${(given50 ? `${given30 || given40 ? ", " : ""}Level 80` : "")}` });
 							}
 							saveStats(level);
-							bigResolve((logString || "") + `. Given ${(!given30 && !given40 && !given50) ? "no roles" : ""}${(given30 ? "RR" : "")}${(given40 ? `${given30 ? ", " : ""}Level 40` : "")}${(given50 ? `${given30 || given40 ? ", " : ""}Level 50` : "")}. ${(!inCommand) ? `Level ${level}` : ""}.`);
+							bigResolve((logString || "") + `. Given ${(!given30 && !given40 && !given50) ? "no roles" : ""}${(given30 ? "RR" : "")}${(given40 ? `${given30 ? ", " : ""}Level 40` : "")}${(given50 ? `${given30 || given40 ? ", " : ""}Level 80` : "")}. ${(!inCommand) ? `Level ${level}` : ""}.`);
 							if (inCommand && !button) deleteStuff(message, execTime, id);
 						});
 					});
