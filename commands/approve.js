@@ -133,7 +133,7 @@ module.exports = {
 				const msgtxt = [];
 				const give30 = (level >= (ops.targetLevel || 30) || level == "missing") ? true : false;
 				const give40 = (level >= 40) ? true : false;
-				const give50 = (ops.level50Role !== "0" && level >= 50) ? true : false;
+				const give50 = (ops.level50Role !== "0" && level >= 80) ? true : false;
 				if (!give30) {
 					if (member.roles.cache.has(ops.targetLevelRole)) {
 						if (ops.dmMail && dm) return mail.mailDM(message, "already", level);
