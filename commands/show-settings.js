@@ -4,26 +4,26 @@ const Discord = require("discord.js");
 module.exports = {
 	name: "show-settings",
 	description: "Shows all settings for the current (and only) instance of the bot",
-  aliases: ["settings", "options", "opts", "show"],
-  usage: `${ops.prefix}settings`,
-	guildOnly:true,
-	type:"Info",
+	aliases: ["settings", "options", "opts", "show"],
+	usage: `${ops.prefix}settings`,
+	guildOnly: true,
+	type: "Info",
 	execute(message) {
 		let config = {};
 		delete require.cache[require.resolve("../server/config.json")];
 		config = require("../server/config.json");
 		const embArr = [
-			new Discord.MessageEmbed()
-			.setTitle("Settings")
-			.setDescription("These are the settings that apply to (every/the only) instance of the bot.")];
-		return new Promise(function(resolve) {
-			for (const cat in config){
-				const embed = new Discord.MessageEmbed()
-				.setTitle(`${cat.charAt(0).toUpperCase() + cat.slice(1)}:`)
-				.setDescription(`*${configDesc[cat]["self"].replace("{ops.prefix}", ops.prefix)}*`)
-				;
-				for (const key in config[cat]){
-					embed.addField(`${key}: *${configDesc[cat][key]}*`, `\`${config[cat][key].toString().replace("true", "ON").replace("false", "OFF")}\``);
+			new Discord.EmbedBuilder()
+				.setTitle("Settings")
+				.setDescription("These are the settings that apply to (every/the only) instance of the bot.")];
+		return new Promise(function (resolve) {
+			for (const cat in config) {
+				const embed = new Discord.EmbedBuilder()
+					.setTitle(`${cat.charAt(0).toUpperCase() + cat.slice(1)}:`)
+					.setDescription(`*${configDesc[cat]["self"].replace("{ops.prefix}", ops.prefix)}*`)
+					;
+				for (const key in config[cat]) {
+					embed.addFields({ name: `${key}: *${configDesc[cat][key]}*`, value: `\`${config[cat][key].toString().replace("true", "ON").replace("false", "OFF")}\`` });
 					// data.push(`${key}: \`${config[cat][key]}\`   ${configDesc[cat][key]}`);
 				}
 				embArr.push(embed);

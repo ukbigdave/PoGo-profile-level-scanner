@@ -20,21 +20,22 @@ const { token } = require("./server/keys.json"),
 		makeCache: (require("./server/config.json").toggles.strictCache) ? Discord.Options.cacheWithLimits(cacheOps) : Discord.Options.cacheEverything(),
 		sweepers: sweeperOps,
 		intents: [
-			Discord.Intents.FLAGS.GUILDS,
-			Discord.Intents.FLAGS.GUILD_MEMBERS,
-			Discord.Intents.FLAGS.GUILD_MESSAGES,
-			Discord.Intents.FLAGS.DIRECT_MESSAGES,
-			Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
+			Discord.GatewayIntentBits.Guilds,
+			Discord.GatewayIntentBits.GuildMembers,
+			Discord.GatewayIntentBits.GuildMessages,
+			Discord.GatewayIntentBits.DirectMessages,
+			Discord.GatewayIntentBits.DirectMessageReactions,
+			Discord.GatewayIntentBits.MessageContent,
 		],
 		partials: [
-			"CHANNEL",
-			"GUILD_MEMBER",
+			Discord.Partials.Channel,
+			Discord.Partials.GuildMember,
 		],
 		presence: {
 			status: "online",
 			activities: [{
 				name: act,
-				type: "PLAYING",
+				type: Discord.ActivityType.Playing,
 			}],
 		},
 	});
@@ -286,7 +287,7 @@ function processImage(message, postedTime, wasDelayed) {
 	});
 }
 
-client.once("ready", async () => {
+client.once("clientReady", async () => {
 	const server = (ops.serverID) ? await client.guilds.fetch(ops.serverID) : undefined;
 	const logs = (ops.logsChannel) ? await client.channels.fetch(ops.logsChannel) : undefined;
 	const channel = (ops.screenshotScanning && ops.screenshotChannel) ? await client.channels.fetch(ops.screenshotChannel) : undefined;
@@ -407,7 +408,7 @@ client.once("ready", async () => {
 		if (message.author.bot && message.author.id != "155149108183695360" && message.author.id != "470722245824610306") return; // Bot? Cancel
 
 		// Check if message is from a guild before accessing guild properties
-		if (message.guild && message.guild.id === '873942903364399124' && message.mentions.has(client.user) && message.channel.type != "DM") {
+		if (message.guild && message.guild.id === '873942903364399124' && message.mentions.has(client.user) && message.channel.type != Discord.ChannelType.DM) {
 			message.reply('If you need help please DM me, or tag `@staff`'); // ADDED FOR PREMIER
 		}
 
@@ -415,7 +416,7 @@ client.once("ready", async () => {
 		if (message.content == `${client.user.toString().slice(0, 2) + "!" + client.user.toString().slice(2, client.user.toString().length)} prefix` || message.content == `${client.user} prefix`) return message.reply(`\`${ops.prefix}\`${(ops.prefix2) ? ` or \`${ops.prefix2}\`` : ""}`);
 		const postedTime = new Date();
 		let dm = false;
-		if (message.channel.type == "DM") dm = true;
+		if (message.channel.type == Discord.ChannelType.DM) dm = true;
 		if (!dm && ops.serverID && message.guild.id != ops.serverID) { // If we are in the wrong server
 			return;
 		}
@@ -740,7 +741,7 @@ client.on("error", (error) => {
 		}
 		if (loaded) {
 			//console.error(`[${dateToTime(new Date())}]: Resumed! Refreshing Activity...`);
-			client.user.setActivity(act, { type: "PLAYING" });
+			client.user.setActivity(act, { type: Discord.ActivityType.Playing });
 		}
 	})
 	.on("shardDisconnect", (evt, id) => {
@@ -756,7 +757,7 @@ client.on("error", (error) => {
 		if (loaded) {
 			//console.error(`[${dateToTime(new Date())}]: Reconnected! Refreshing Activity...`);
 			console.error(id, una);
-			client.user.setActivity(act, { type: "PLAYING" });
+			client.user.setActivity(act, { type: Discord.ActivityType.Playing });
 		}
 	})
 	.on("shardReconnecting", (id) => {

@@ -171,12 +171,12 @@ I am honestly curious as to why, so please shoot me a dm at <@146186496448135168
 						});
 						if (!inCommand) {
 							const Discord = require("discord.js");
-							const appButton = new Discord.MessageButton().setCustomId("app").setLabel("Approve").setStyle("SUCCESS");
-							const rejButton = new Discord.MessageButton().setCustomId("rej").setLabel("Reject").setStyle("DANGER");
-							const canButton = new Discord.MessageButton().setCustomId("canc").setLabel("Cancel").setStyle("DANGER");
-							const row1 = new Discord.MessageActionRow()
+							const appButton = new Discord.ButtonBuilder().setCustomId("app").setLabel("Approve").setStyle(Discord.ButtonStyle.Success);
+							const rejButton = new Discord.ButtonBuilder().setCustomId("rej").setLabel("Reject").setStyle(Discord.ButtonStyle.Danger);
+							const canButton = new Discord.ButtonBuilder().setCustomId("canc").setLabel("Cancel").setStyle(Discord.ButtonStyle.Danger);
+							const row1 = new Discord.ActionRowBuilder()
 								.addComponents([appButton, rejButton]);
-							const row2 = new Discord.MessageActionRow()
+							const row2 = new Discord.ActionRowBuilder()
 								.addComponents([appButton, canButton]);
 							if (ops.dmMail && dm) {
 								setTimeout(async () => {

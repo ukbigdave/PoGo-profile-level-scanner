@@ -40,7 +40,7 @@ function handleImage(message, postedTime, wasDelayed) {
 						if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount + 1}: Crop finished\t`, postedTime.getTime());
 						const testSend = new Promise(function (res) {
 							if (ops.testMode && !dm) {
-								const imgAttach = new Discord.MessageAttachment(imgBuff, image.url);
+								const imgAttach = new Discord.AttachmentBuilder(imgBuff, { name: image.name || 'cropped-image.png' });
 								message.reply({ content: "Test mode. This is the image fed to the OCR system:", files: [imgAttach] }).then(() => {
 									if (ops.performanceMode) performanceLogger(`#${imgStats.imageLogCount + 1}: Test msg posted\t`, postedTime.getTime());
 									res();
