@@ -304,11 +304,7 @@ client.once("ready", async () => {
 	if (ops.dmMail) {
 		await mail.passServ(server.name, server.iconURL());
 	}
-	const soul = await client.users.fetch(dev, false, true);
-	if (ops.serverID == "0" || server == undefined) {
-		console.log("\nOops the server is broken. Set \"serverID\" in the config.json");
-		return;
-	}
+
 	if (ops.screenshotScanning && (ops.screenshotChannel == "0" || channel == undefined)) {
 		console.log("\nOops the screenshot channel is broken. Set \"screenshotChannel\" in the config.json");
 		return;
@@ -341,8 +337,6 @@ client.once("ready", async () => {
 	const activeServers = client.guilds.cache;
 	const activeServerList = [];
 	activeServers.each(serv => activeServerList.push(`"${serv.name}" aka #${serv.id}`));
-	soul.send(`**Dev message:** Active in:\n${activeServerList.join("\n")}`).catch(console.error);
-	soul.send(`**Dev message:** Loaded in guild: "${server.name}"#${server.id} in channel <#${channel.id}>#${channel.id}`).catch(console.error);
 	console.log(`\nActive in:\n${activeServerList.join("\n")}`);
 	console.log(`\nServer started at: ${launchDate.toLocaleString()}. Loaded in guild: "${server.name}"#${server.id} ${(ops.screenshotScanning) ? `in channel: "${channel.name}"#${channel.id}` : ""}`);
 	console.log("\n======================================================================================\n");
