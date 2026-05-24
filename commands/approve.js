@@ -28,7 +28,7 @@ module.exports = {
 					const inCommand = true;
 					const message = (button) ? input.message : input; // If called by command, message = input, if by button, input.message
 					const server = (ops.serverID) ? message.client.guilds.cache.get(ops.serverID) : undefined;
-					if (args[2] || args[1] > 80 || args[1] < 1 || (args[1] && isNaN(args[1]))) {
+					if (args[2]) {
 						message.reply(`Please provide only one user and one level in the format \`${ops.prefix}c <@mention/ID> [level]\``);
 						bigResolve(", but it failed, since the format was wrong.");
 						return;
@@ -39,8 +39,53 @@ module.exports = {
 						bigResolve(", but it failed, since they tagged two people in the command.");
 						return;
 					}
-					const level = args[1] || "missing";
+					const isMailTicket = message.channel.parent && message.channel.parentId == ops.mailCategory;
+					const firstArgLooksLikeLevel = args[0] && /^\d+$/.test(args[0]) && args[0] >= 1 && args[0] <= 80;
+					const useMailFallback = isMailTicket && (!args[0] || (firstArgLooksLikeLevel && !args[1]));
+					let level = "missing";
 					let id = 0;
+
+					if (useMailFallback) {
+						if (args[0]) level = args[0];
+						getUserIdFromFirstTicketMessage(message.channel).then((ticketId) => {
+							if (!ticketId) {
+								message.reply("I could not determine the ticket user from the first message in this channel. Please provide a user mention/ID.");
+								bigResolve(", but it failed, since no user ID was supplied and the ticket user could not be resolved.");
+								return;
+							}
+							id = ticketId;
+							if (!(level == "missing") && (isNaN(level) || level > 80 || level < 1)) {
+								message.reply("Please provide a level between 1 and 80.");
+								bigResolve(", but it failed, since the level was outside the allowed range.");
+								return;
+							}
+							server.members.fetch(id).then((memb) => {
+								const info = [inCommand, message, false, false, level, id, memb];
+								resolve(info);
+							}).catch((err) => {
+								if (err.name == "DiscordAPIError") {
+									message.reply("I could not find this member, they may have left the server.");
+									bigResolve(`, but it failed, since I couldn't fetch member ${id}.`);
+									return;
+								}
+								message.reply("I could not find this member for an unexpected reason. Tell the developer please.");
+								console.error(`[${execTime}]: Error: An unexpected error occured when trying to fetch ${id}.  Err:${err}`);
+								bigResolve(`, but it failed, due to an unexpected error when trying to fetch ${id}.`);
+							});
+						}).catch((err) => {
+							message.reply("I could not inspect the ticket history to determine the member ID. Please provide a mention/ID.");
+							console.error(`[${execTime}]: Error: Could not resolve ticket user id in ${message.channel}. Err:${err}`);
+							bigResolve(", but it failed, since the ticket history could not be read.");
+						});
+						return;
+					}
+
+					if (args[1] > 80 || args[1] < 1 || (args[1] && isNaN(args[1]))) {
+						message.reply("Please provide a level between 1 and 80.");
+						bigResolve(", but it failed, since the level was outside the allowed range.");
+						return;
+					}
+					level = args[1] || "missing";
 					if (args[0].startsWith("<@") && args[0].endsWith(">")) {
 						id = args[0].slice(2, -1);
 						if (id.startsWith("!")) id = id.slice(1);
@@ -357,4 +402,62 @@ function deleteStuff(message, execTime, id) {
 			console.error(`[${execTime}]: Error: Could not bulk delete ${selfMsgs.size} messages. Error message: ${err}`);
 		});
 	});
+}
+
+function getUserIdFromFirstTicketMessage(channel) {
+	return new Promise((resolve, reject) => {
+		let oldestMessage = null;
+		let before;
+
+		function scanBatch() {
+			const fetchOpts = { limit: 100 };
+			if (before) fetchOpts.before = before;
+			channel.messages.fetch(fetchOpts).then((msgs) => {
+				if (msgs.size == 0) {
+					resolve(oldestMessage ? extractTicketUserId(oldestMessage) : false);
+					return;
+				}
+
+				const sorted = msgs.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+				oldestMessage = sorted.first();
+				before = sorted.firstKey();
+
+				if (msgs.size < 100) {
+					resolve(extractTicketUserId(oldestMessage));
+					return;
+				}
+				scanBatch();
+			}).catch(reject);
+		}
+
+		scanBatch();
+	});
+}
+
+function extractTicketUserId(msg) {
+	if (!msg) return false;
+
+	const idFromContentBracket = msg.content && msg.content.match(/\((\d{17,20})\)/);
+	if (idFromContentBracket) return idFromContentBracket[1];
+
+	const idFromMention = msg.content && msg.content.match(/<@!?(\d{17,20})>/);
+	if (idFromMention) return idFromMention[1];
+
+	if (msg.embeds && msg.embeds.length > 0) {
+		for (const emb of msg.embeds) {
+			const footerText = emb.footer && emb.footer.text;
+			const idFromFooter = footerText && footerText.match(/(\d{17,20})$/);
+			if (idFromFooter) return idFromFooter[1];
+
+			if (emb.fields && emb.fields.length > 0) {
+				for (const field of emb.fields) {
+					if (!field || !field.value) continue;
+					const idFromField = field.value.match(/(\d{17,20})/);
+					if (idFromField) return idFromField[1];
+				}
+			}
+		}
+	}
+
+	return false;
 }
